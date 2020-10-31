@@ -9,7 +9,7 @@ app.secret_key = "OuiBiensurquecestsecretsinonsasersarien"
 
 requestSQLIfUserExist = "SELECT NomUtilisateur FROM utilisateur WHERE Mail = %s"
 requestSQLInsertUser = "INSERT INTO utilisateur (Mail, MotDePasse, NomUtilisateur) VALUES (%s, %s, %s)"
-requestSQLLoginUser = "SELECT NomUtilisateur, MotDePasse FROM utilisateur WHERE Mail = %s"
+requestSQLLoginUser = "SELECT UtilisateurID, MotDePasse, NomUtilisateur FROM utilisateur WHERE Mail = %s"
 
 
 # Fonction qui renvoie la connexion a la base (interface)
@@ -28,8 +28,8 @@ connectionDB = get_connection()  # Objet de la connexion MySQL
 
 @app.route("/")
 def index():
-    if 'username' in session:
-        return 'Logged in as %s' % escape(session['username'])
+    if 'id' in session:
+        return 'Logged in as %s' % escape(session['id'])
     return redirect(url_for('login'))
 
 
@@ -84,6 +84,7 @@ def login():
                     result = cursorLogin.fetchone()  # On récupère qu'un seul enregistrement
                     if bcrypt.checkpw(request.form['password'].encode('utf8'), result['MotDePasse'].encode('utf8')):
                         # Le mot de passe est correcte
+                        session['id'] = result['UtilisateurID']
                         return 'Tu es connecté !'
                     else:
                         return "Le mot de passe n'est pas correcte !"
@@ -94,18 +95,21 @@ def login():
             print(e)
             return "Erreur"
     else:
-        # Formulaire de connexion (a faire dans un template)
-        return '''
-                <form method="post">
-                    <p><input type=text name=email>
-                    <p><input type=password name=password>
-                    <p><input type=submit value=Login>
-                </form>
-            '''
+        if not session.get('id') is None:
+            return redirect(url_for('index'))
+        else:
+            # Formulaire de connexion (a faire dans un template)
+            return '''
+                    <form method="post">
+                        <p><input type=text name=email>
+                        <p><input type=password name=password>
+                        <p><input type=submit value=Login>
+                    </form>
+                '''
 
 
-# Inutile pour l'instant
+# Déconnexion du compte
 @app.route("/logout")
 def logout():
-    session.pop('username', None)
+    session.pop('id', None)
     return redirect(url_for('login'))
