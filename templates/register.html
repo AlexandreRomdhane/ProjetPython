@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Page d'inscription</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styleRegisterLogin.css') }}">
+</head>
+<body>
+
+<div class="container login-container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3 text-center login-form-1">
+            <h3>Inscription</h3>
+            <form method="post">
+                {% if email and user %}
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Votre mail *" name="email" value="{{ email }}" />
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-control" placeholder="Votre mot de passe *" name="password" value="" />
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Votre nom d'utilisateur *" name="user" value="{{ user }}" />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btnSubmit" value="Inscription" />
+                    </div>
+                    <div class="form-group">
+                        <a href="/login" class="ForgetPwd">J'ai déjà un compte</a>
+                    </div>
+                {% else %}
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Votre mail *" name="email" value="" />
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-control" placeholder="Votre mot de passe *" name="password" value="" />
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Votre nom d'utilisateur *" name="user" value="" />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btnSubmit" value="Inscription" />
+                    </div>
+                    <div class="form-group">
+                        <a href="/login" class="ForgetPwd">J'ai déjà un compte</a>
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            {% for er in error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ er }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+</body>
+</html>

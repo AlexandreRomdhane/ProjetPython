@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Page de connexion</title>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styleRegisterLogin.css') }}">
+</head>
+<div class="container login-container">
+    <div class="row">
+        <div class="col-md-6 offset-md-3 text-center login-form-1">
+            <h3>Connexion</h3>
+            <form method="post">
+                {% if email %}
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Votre mail *" name="email" value="{{ email }}" />
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-control" placeholder="Votre mot de passe *" name="password" value="" />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btnSubmit" value="Connexion" />
+                    </div>
+                    <div class="form-group">
+                        <a href="/register" class="ForgetPwd">Je n'ai pas de compte</a>
+                    </div>
+                {% else %}
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Votre mail *" name="email" value="" />
+                    </div>
+                    <div class="form-group">
+                        <input type="password" class="form-control" placeholder="Votre mot de passe *" name="password" value="" />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" class="btnSubmit" value="Connexion" />
+                    </div>
+                    <div class="form-group">
+                        <a href="/register" class="ForgetPwd">Je n'ai pas de compte</a>
+                    </div>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            {% for er in error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ er }}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+</body>
+</html>
