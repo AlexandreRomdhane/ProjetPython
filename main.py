@@ -1,4 +1,4 @@
-from flask import Flask, session, redirect, url_for, request, render_template
+from flask import Flask, session, redirect, url_for, request, render_template, jsonify
 from markupsafe import escape
 import pymysql.cursors
 import bcrypt
@@ -19,9 +19,11 @@ requestSQLLoginUser = """SELECT UtilisateurID, MotDePasse, NomUtilisateur FROM u
 
 requestSQLInfoUser = """SELECT NomUtilisateur FROM utilisateur WHERE UtilisateurID = %s"""
 
-requestSQLPostUser = """SELECT post.NomPost, post.DatePost FROM post INNER JOIN utilisateur as user
+requestSQLPostUser = """SELECT post.NomPost, post.ContenuPost, post.DatePost FROM post INNER JOIN utilisateur as user
                      ON user.UtilisateurID = post.UtilisateurID WHERE user.UtilisateurID = %s
                      ORDER BY DatePost DESC LIMIT 0, 10"""
+
+requestSQLAddPost = """INSERT INTO post (UtilisateurID, NomPost, ContenuPost, DatePost) VALUES (%s, %s, %s, %s)"""
 
 charLengthRegex = re.compile(r'(\w{8,})')
 upperRegex = re.compile(r'[A-Z]+')
@@ -75,7 +77,7 @@ def register():
                             cursorInsert.execute(requestSQLInsertUser,
                                                  (request.form['email'],
                                                   bcrypt.hashpw(request.form['password'].encode('utf8'),
-                                                  bcrypt.gensalt()),
+                                                                bcrypt.gensalt()),
                                                   request.form['user'],
                                                   date.today()))
                             connectionDB.commit()  # Permet de valider la transaction
@@ -174,6 +176,40 @@ def show_profil():
             return render_template('profil.html', name="ERREUR")
     else:
         return redirect(url_for('login'))
+
+
+# API ne doit être appelé en POST et GET qu'avec le JS
+@app.route('/post', methods=['GET', 'POST'])
+def post():
+    response_json_post = {}
+    if request.method == 'GET':
+        try:
+            with connectionDB.cursor() as cursor_add_post:
+                cursor_add_post.execute(requestSQLPostUser, (session.get('id')))
+                if cursor_add_post.rowcount != 0:
+                    result_post = cursor_add_post.fetchall()
+
+                    response_json_post = {'error': 'false', 'message': '', 'post': result_post}
+                    return jsonify(response_json_post)
+                else:
+                    response_json_post = {'error': 'false', 'message': "Il n'y a aucun post", 'post': {}}
+                    return jsonify(response_json_post)
+        except pymysql.Error as e:
+            # En cas d'erreur voir sur internet pour mieux les gérer
+            print(e)
+            return jsonify(response_json_post)
+    else:
+        try:
+            with connectionDB.cursor() as cursor_add_post:
+                cursor_add_post.execute(requestSQLAddPost, (session.get('id'), request.form['namePost']
+                                                            , request.form['contentPost'], date.today()))
+                connectionDB.commit()
+                response_json_post = {'error': 'false', 'message': 'Le post a bien été crée !'}
+                return jsonify(response_json_post)
+        except pymysql.Error as e:
+            # En cas d'erreur voir sur internet pour mieux les gérer
+            print(e)
+            return jsonify(response_json_post)
 
 
 def check_password(password):

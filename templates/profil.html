@@ -8,17 +8,40 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
 </head>
 <body>
-    <p>Tu es {{ name }}</p>
-    <button id="btnDeconnect" type="button" class="btn btn-outline-primary">Déconnexion</button>
-    <button id="btnIndex" type="button" class="btn btn-outline-primary">Revenir au fil</button>
-    <!--<button id="btnDeconnect">Déconnexion</button>
-    <button id="btnIndex">Revenir au fil</button>-->
-    {% if post %}
-        {% for row in post %}
-            <p>{{ row['NomPost'] }}  :  {{ row['DatePost'] }}</p>
-        {% endfor %}
-    {% else %}
-        <p>Tu n'as encore rien posté ! <a href="#">Poster</a></p>
-    {% endif %}
+<div class="container login-container">
+    <div class="row">
+        <div class="col-md-6 text-center">
+            <p>Tu es {{ name }}</p>
+        </div>
+        <div class="col-md-6 text-center">
+            <button id="btnDeconnect" type="button" class="btn btn-outline-primary">Déconnexion</button>
+            <button id="btnIndex" type="button" class="btn btn-outline-primary">Revenir au fil</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 offset-md-3 text-center">
+            <div class="form-group">
+                <input id="namePost" type="text" class="form-control" placeholder="Nom du post *" name="namePost" />
+            </div>
+            <div class="form-group">
+                <input id="contentPost" type="text" class="form-control" placeholder="Contenu du post *" name="contentPost" />
+            </div>
+            <div class="form-group">
+                <input id="btnPoster" type="submit" class="btnSubmit" value="Poster" />
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {% if post %}
+            {% for row in post %}
+                <p>{{ row['NomPost'] }}  :  {{ row['DatePost'] }}</p>
+            {% endfor %}
+        {% else %}
+            <div class="col-md-6 offset-md-3 text-center">
+                <p>Tu n'as encore rien posté ! <a href="#">Poster</a></p>
+            </div>
+        {% endif %}
+    </div>
+</div>
 </body>
 </html>
