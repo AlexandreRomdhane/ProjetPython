@@ -10,9 +10,18 @@ app = Flask(__name__)
 
 app.secret_key = "OuiBiensurquecestsecretsinonsasersarien"
 
-requestSQLIfUserExist = "SELECT NomUtilisateur FROM utilisateur WHERE Mail = %s"
-requestSQLInsertUser = "INSERT INTO utilisateur (Mail, MotDePasse, NomUtilisateur, DateCreation) VALUES (%s, %s, %s, %s)"
-requestSQLLoginUser = "SELECT UtilisateurID, MotDePasse, NomUtilisateur FROM utilisateur WHERE Mail = %s"
+requestSQLIfUserExist = """SELECT NomUtilisateur FROM utilisateur WHERE Mail = %s"""
+
+requestSQLInsertUser = """INSERT INTO utilisateur (Mail, MotDePasse, NomUtilisateur, DateCreation) 
+                       VALUES (%s, %s, %s, %s)"""
+
+requestSQLLoginUser = """SELECT UtilisateurID, MotDePasse, NomUtilisateur FROM utilisateur WHERE Mail = %s"""
+
+requestSQLInfoUser = """SELECT NomUtilisateur FROM utilisateur WHERE UtilisateurID = %s"""
+
+requestSQLPostUser = """SELECT post.NomPost, post.DatePost FROM post INNER JOIN utilisateur as user
+                     ON user.UtilisateurID = post.UtilisateurID WHERE user.UtilisateurID = %s
+                     ORDER BY DatePost DESC LIMIT 0, 10"""
 
 charLengthRegex = re.compile(r'(\w{8,})')
 upperRegex = re.compile(r'[A-Z]+')
@@ -35,7 +44,8 @@ connectionDB = get_connection()  # Objet de la connexion MySQL
 @app.route("/")
 def index():
     if 'id' in session:
-        return 'Tu es connecté en tant que %s' % escape(session['id'])
+        return render_template('index.html')
+        # return 'Tu es connecté en tant que %s' % escape(session['id'])
     return redirect(url_for('login'))
 
 
@@ -135,6 +145,35 @@ def login():
 def logout():
     session.pop('id', None)
     return redirect(url_for('login'))
+
+
+@app.route("/profil")
+def show_profil():
+    if 'id' in session:
+        try:
+            with connectionDB.cursor() as cursor_user:
+                # On regarde si le cookie de session est correcte et qu'il correspond a quelqu'un dans la base
+                cursor_user.execute(requestSQLInfoUser, session.get('id'))
+                if cursor_user.rowcount != 0:
+                    info_user = cursor_user.fetchone()
+
+                    with connectionDB.cursor() as cursor_post_user:
+                        cursor_post_user.execute(requestSQLPostUser, session.get('id'))
+                        if cursor_post_user.rowcount != 0:
+                            result_post = cursor_post_user.fetchall()
+                            # On passe en paramètre une liste de dictionnaire retourner par le résultat de la requête
+                            return render_template('profil.html', name=info_user['NomUtilisateur'], post=result_post)
+                        else:
+                            # Afficher il n'y a aucun post au niveau du front
+                            return render_template('profil.html', name=info_user['NomUtilisateur'])
+                else:
+                    return redirect(url_for('login'))
+        except pymysql.Error as e:
+            # En cas d'erreur voir sur internet pour mieux les gérer
+            print(e)
+            return render_template('profil.html', name="ERREUR")
+    else:
+        return redirect(url_for('login'))
 
 
 def check_password(password):
