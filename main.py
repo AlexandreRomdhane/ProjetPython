@@ -149,7 +149,7 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route("/profil")
+@app.route("/profil/<userName>")
 def show_profil():
     if 'id' in session:
         try:
