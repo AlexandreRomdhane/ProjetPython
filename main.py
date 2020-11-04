@@ -6,6 +6,8 @@ from email_validator import validate_email, EmailNotValidError
 import re
 from datetime import date
 
+from db import connectionDB, get_info_user_by_id, get_post_user_by_id, get_account_if_exist, register_account, add_post
+
 app = Flask(__name__)
 
 app.secret_key = "OuiBiensurquecestsecretsinonsasersarien"
@@ -27,20 +29,6 @@ requestSQLAddPost = """INSERT INTO post (UtilisateurID, NomPost, ContenuPost, Da
 
 charLengthRegex = re.compile(r'(\w{8,})')
 upperRegex = re.compile(r'[A-Z]+')
-
-
-# Fonction qui renvoie la connexion a la base (interface)
-def get_connection():
-    connection = pymysql.connect(host='localhost',
-                                 user='root',
-                                 password='',
-                                 db='memecontainer',
-                                 charset='utf8mb4',
-                                 cursorclass=pymysql.cursors.DictCursor)
-    return connection
-
-
-connectionDB = get_connection()  # Objet de la connexion MySQL
 
 
 @app.route("/")
@@ -68,37 +56,21 @@ def register():
                 error.append("Le nom d'utilisateur ne doit pas être vide !")
             validate_email(request.form['email'])
             if len(error) == 0:  # Si il y a aucune erreur alors on continue
-                with connectionDB.cursor() as cur:
-                    # On regarde en base si le compte n'existe pas en fonction de l'adresse mail
-                    cur.execute(requestSQLIfUserExist, request.form['email'])
-                    if cur.rowcount == 0:  # Si aucun enregistrement ne correspond alors on crée le compte
-                        with connectionDB.cursor() as cursorInsert:
-                            # On enregistre l'utilisateur en base en hashant sont mot de passe
-                            cursorInsert.execute(requestSQLInsertUser,
-                                                 (request.form['email'],
-                                                  bcrypt.hashpw(request.form['password'].encode('utf8'),
-                                                                bcrypt.gensalt()),
-                                                  request.form['user'],
-                                                  date.today()))
-                            connectionDB.commit()  # Permet de valider la transaction
-                            return redirect(url_for('login'))  # Une fois finis on le redirige vers la page de connexion
-                    else:
-                        # Si l'adresse mail est déjà utilisée
-                        # TODO Faire une fonction pour éviter de faire plusieurs fois le même traitement
-                        error.append('Le compte existe déjà')
-                        return render_template('register.html'
-                                               , error=error
-                                               , email=request.form['email'], user=request.form['user'])
+                password_hash = bcrypt.hashpw(request.form['password'].encode('utf8'),
+                                              bcrypt.gensalt())
+                if register_account(request.form['email'], password_hash, request.form['user']):
+                    # Compte bien enregistré
+                    return redirect(url_for('login'))  # Une fois finis on le redirige vers la page de connexion
+                else:
+                    error.append('Le compte existe déjà')
+                    return render_template('register.html'
+                                           , error=error
+                                           , email=request.form['email'], user=request.form['user'])
             else:
                 # TODO Faire une fonction pour éviter de faire plusieurs fois le même traitement
                 return render_template('register.html'
                                        , error=error
                                        , email=request.form['email'], user=request.form['user'])
-        except pymysql.Error as e:
-            # En cas d'erreur voir sur internet pour mieux les gérer
-            print(e)
-            error.append('Une erreur SQL est arrivée')
-            return render_template('register.html', error=error)
         except EmailNotValidError as e:
             error.append("L'adresse email n'est pas valide !")
             # TODO Faire une fonction pour éviter de faire plusieurs fois le même traitement
@@ -113,27 +85,18 @@ def login():
     if request.method == 'POST':
         error = []
         # Faire la vérification
-        try:
-            with connectionDB.cursor() as cursorLogin:
-                # On récupère les informations de connexions de l'utilisateur qui tente de se connecter
-                cursorLogin.execute(requestSQLLoginUser, request.form['email'])
-                # On vérifie que son compte existe
-                if cursorLogin.rowcount != 0:
-                    result = cursorLogin.fetchone()  # On récupère qu'un seul enregistrement
-                    if bcrypt.checkpw(request.form['password'].encode('utf8'), result['MotDePasse'].encode('utf8')):
-                        # Le mot de passe est correcte
-                        session['id'] = result['UtilisateurID']
-                        return redirect(url_for('index'))  # Page du fil d'actualité
-                    else:
-                        error.append("Le mot de passe ou l'adresse email n'est pas valide !")
-                        return render_template('login.html', error=error, email=request.form['email'])
-                else:
-                    error.append("Le mot de passe ou l'adresse n'est pas valide !")
-                    return render_template('login.html', error=error, email=request.form['email'])
-        except pymysql.Error as e:
-            # En cas d'erreur voir sur internet pour mieux les gérer
-            print(e)
-            error.append("Erreur SQL")
+        result_user = get_account_if_exist(request.form['email'])
+        if result_user is not None:  # Si l'utilisateur existe alors
+            if bcrypt.checkpw(request.form['password'].encode('utf8'), result_user['MotDePasse'].encode('utf8')):
+                # Le mot de passe est correcte
+                session['id'] = result_user['UtilisateurID']
+                return redirect(url_for('index'))  # Page du fil d'actualité
+            else:
+                # Le mot de passe ne correspond pas
+                error.append("Le mot de passe ou l'adresse email n'est pas valide !")
+                return render_template('login.html', error=error, email=request.form['email'])
+        else:  # Si il n'existe pas alors
+            error.append("Le mot de passe ou l'adresse n'est pas valide !")
             return render_template('login.html', error=error, email=request.form['email'])
     else:
         if not session.get('id') is None:
@@ -149,67 +112,63 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route("/profil/")
-def show_profil():
+@app.route("/profil/<username>")
+def show_profil(username):
     if 'id' in session:
-        try:
-            with connectionDB.cursor() as cursor_user:
-                # On regarde si le cookie de session est correcte et qu'il correspond a quelqu'un dans la base
-                cursor_user.execute(requestSQLInfoUser, session.get('id'))
-                if cursor_user.rowcount != 0:
-                    info_user = cursor_user.fetchone()
-
-                    with connectionDB.cursor() as cursor_post_user:
-                        cursor_post_user.execute(requestSQLPostUser, session.get('id'))
-                        if cursor_post_user.rowcount != 0:
-                            result_post = cursor_post_user.fetchall()
-                            # On passe en paramètre une liste de dictionnaire retourner par le résultat de la requête
-                            return render_template('profil.html', name=info_user['NomUtilisateur'], post=result_post)
-                        else:
-                            # Afficher il n'y a aucun post au niveau du front
-                            return render_template('profil.html', name=info_user['NomUtilisateur'])
-                else:
-                    return redirect(url_for('login'))
-        except pymysql.Error as e:
-            # En cas d'erreur voir sur internet pour mieux les gérer
-            print(e)
-            return render_template('profil.html', name="ERREUR")
+        # On regarde si le cookie de session est correcte et qu'il correspond a quelqu'un dans la base
+        info_user = get_info_user_by_id(session.get('id'))
+        if info_user is not None:
+            all_post_user = get_post_user_by_id(session.get('id'))
+            if all_post_user is not None:
+                return render_template('profil.html', name=info_user['NomUtilisateur'], post=all_post_user)
+            else:
+                return render_template('profil.html', name=info_user['NomUtilisateur'])
+        else:
+            print("Une erreur inattendue est arrivée ! (id de session introuvable en base)")
+            return redirect(url_for('logout'))
     else:
         return redirect(url_for('login'))
 
 
 # API ne doit être appelé en POST et GET qu'avec le JS
-@app.route('/post', methods=['GET', 'POST'])
+@app.route('/api/post', methods=['GET', 'POST'])
 def post():
     response_json_post = {}
     if request.method == 'GET':
-        try:
-            with connectionDB.cursor() as cursor_add_post:
-                cursor_add_post.execute(requestSQLPostUser, (session.get('id')))
-                if cursor_add_post.rowcount != 0:
-                    result_post = cursor_add_post.fetchall()
+        all_post_user = get_post_user_by_id(session.get('id'))
+        if all_post_user is not None:
+            response_json_post = {'errors': False, 'message': '', 'post': all_post_user}
+            return jsonify(response_json_post)
+        else:
+            response_json_post = {'errors': False, 'message': "Il n'y a aucun post", 'post': {}}
+            return jsonify(response_json_post)
+    else:  # Post
+        if add_post(session.get('id'), request.form['namePost'], request.form['contentPost']):
+            response_json_post = {'errors': False, 'message': 'Le post a bien été crée !'}
+            return jsonify(response_json_post)
+        else:
+            response_json_post = {'errors': True, 'message': 'Impossible de créer le post !'}
+            return jsonify(response_json_post)
 
-                    response_json_post = {'error': 'false', 'message': '', 'post': result_post}
-                    return jsonify(response_json_post)
-                else:
-                    response_json_post = {'error': 'false', 'message': "Il n'y a aucun post", 'post': {}}
-                    return jsonify(response_json_post)
-        except pymysql.Error as e:
-            # En cas d'erreur voir sur internet pour mieux les gérer
-            print(e)
-            return jsonify(response_json_post)
+
+
+@app.route("/api/user")
+def get_user_by_session_id():
+    if session.get('id') is not None:
+        result_user = get_info_user_by_id(session.get('id'))
+
+        if result_user is not None:
+            response_json = {'errors': False, 'message': 'Utilisateur trouvé !',
+                             'username': result_user['NomUtilisateur']}
+            return response_json
+        else:
+            response_json = {'errors': True, 'message': 'Utilisateur non trouvé vérifiez l\'identifiant !',
+                             'username': ''}
+            return response_json
     else:
-        try:
-            with connectionDB.cursor() as cursor_add_post:
-                cursor_add_post.execute(requestSQLAddPost, (session.get('id'), request.form['namePost']
-                                                            , request.form['contentPost'], date.today()))
-                connectionDB.commit()
-                response_json_post = {'error': 'false', 'message': 'Le post a bien été crée !'}
-                return jsonify(response_json_post)
-        except pymysql.Error as e:
-            # En cas d'erreur voir sur internet pour mieux les gérer
-            print(e)
-            return jsonify(response_json_post)
+        response_json = {'errors': True, 'message': 'Une erreur c\'est produite lors de la récupération du cookie de '
+                                                    'session !', 'username': ''}
+        return response_json
 
 
 def check_password(password):
