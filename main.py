@@ -5,6 +5,7 @@ import bcrypt
 from email_validator import validate_email, EmailNotValidError
 import re
 from datetime import date
+from follow import *
 
 from db import connectionDB, get_info_user_by_id, get_post_user_by_id, get_account_if_exist, register_account, add_post
 
@@ -129,6 +130,13 @@ def show_profil(username):
     else:
         return redirect(url_for('login'))
 
+# L'utilisateur de la session va suivre l'utilisateur user
+@app.route("/profil/<username>/follow")
+follow()
+
+# L'utilisateur de la session va arrete de suivre l'utilsateur user
+@app.route("/profil/<username>/unfollow")
+unfollow()
 
 # API ne doit être appelé en POST et GET qu'avec le JS
 @app.route('/api/post', methods=['GET', 'POST'])
