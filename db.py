@@ -18,6 +18,14 @@ requestSQLAddPost = """INSERT INTO post (UtilisateurID, NomPost, ContenuPost, Da
 
 requestSQLDeletePost = """DELETE FROM post WHERE UtilisateurID = %s AND PostID = %s"""
 
+requestSQLInsertFollower = """INSERT INTO Followers (Follower_id, Followed_id) 
+                       VALUES (%s, %s)"""
+
+requestSQLDeleteFollower = """Delete FROM Followers WHERE Follower_id = %s 
+                        AND Followed_id = %s"""
+
+requestSQLIfFollowerExist = """SELECT Followed_id FROM Followers WHERE Follower = %s"""
+
 
 # Fonction qui renvoie la connexion a la base (interface)
 def get_connection():

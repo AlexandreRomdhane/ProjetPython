@@ -1,3 +1,6 @@
+from flask import Flask, session, redirect, url_for, request, render_template, jsonify
+from db import connectionDB
+
 requestSQLInsertFollower = """INSERT INTO Followers (Follower_id, Followed_id) 
                        VALUES (%s, %s)"""
 
@@ -40,9 +43,12 @@ def follow():
             else:
                 #
                 return render_template('profil.html')
+        except pymysql.Error as e:
+            return "Oui"
 
 def unfollow():
-    if not session.get('id') is None:
+    if request.method == 'GET':
+        if not session.get('id') is None:
             return redirect(url_for('index'))
         else:
             return render_template('register.html')
@@ -51,7 +57,7 @@ def unfollow():
         try:
             if len(request.form['followed_id']) != 0:
                 test.append("Vous ne suivez pas cette personne")
-             if len(test) != 0: 
+            if len(test) != 0: 
                 # Si il y a aucune erreur alors on continue
                 with connectionDB.cursor() as cur:
                     # Vérification dans la BDD si le user ne suit pas déjà la personne
@@ -73,6 +79,6 @@ def unfollow():
             else:
                 #
                 return render_template('profil.html')
-
-
-def is_following():
+        except pymysql.Error as e:
+            return "Oui"
+            
