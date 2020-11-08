@@ -6,26 +6,26 @@ from email_validator import validate_email, EmailNotValidError
 import re
 from datetime import date
 
-from db import connectionDB, get_info_user_by_id, get_post_user_by_id, get_account_if_exist, register_account, add_post
+from db import get_info_user_by_id, get_post_user_by_id, get_account_if_exist, register_account, add_post, delete_post
 
 app = Flask(__name__)
 
 app.secret_key = "OuiBiensurquecestsecretsinonsasersarien"
 
-requestSQLIfUserExist = """SELECT NomUtilisateur FROM utilisateur WHERE Mail = %s"""
-
-requestSQLInsertUser = """INSERT INTO utilisateur (Mail, MotDePasse, NomUtilisateur, DateCreation) 
-                       VALUES (%s, %s, %s, %s)"""
-
-requestSQLLoginUser = """SELECT UtilisateurID, MotDePasse, NomUtilisateur FROM utilisateur WHERE Mail = %s"""
-
-requestSQLInfoUser = """SELECT NomUtilisateur FROM utilisateur WHERE UtilisateurID = %s"""
-
-requestSQLPostUser = """SELECT post.NomPost, post.ContenuPost, post.DatePost FROM post INNER JOIN utilisateur as user
-                     ON user.UtilisateurID = post.UtilisateurID WHERE user.UtilisateurID = %s
-                     ORDER BY DatePost DESC LIMIT 0, 10"""
-
-requestSQLAddPost = """INSERT INTO post (UtilisateurID, NomPost, ContenuPost, DatePost) VALUES (%s, %s, %s, %s)"""
+# requestSQLIfUserExist = """SELECT NomUtilisateur FROM utilisateur WHERE Mail = %s"""
+#
+# requestSQLInsertUser = """INSERT INTO utilisateur (Mail, MotDePasse, NomUtilisateur, DateCreation)
+#                        VALUES (%s, %s, %s, %s)"""
+#
+# requestSQLLoginUser = """SELECT UtilisateurID, MotDePasse, NomUtilisateur FROM utilisateur WHERE Mail = %s"""
+#
+# requestSQLInfoUser = """SELECT NomUtilisateur FROM utilisateur WHERE UtilisateurID = %s"""
+#
+# requestSQLPostUser = """SELECT post.NomPost, post.ContenuPost, post.DatePost FROM post INNER JOIN utilisateur as user
+#                      ON user.UtilisateurID = post.UtilisateurID WHERE user.UtilisateurID = %s
+#                      ORDER BY DatePost DESC LIMIT 0, 10"""
+#
+# requestSQLAddPost = """INSERT INTO post (UtilisateurID, NomPost, ContenuPost, DatePost) VALUES (%s, %s, %s, %s)"""
 
 charLengthRegex = re.compile(r'(\w{8,})')
 upperRegex = re.compile(r'[A-Z]+')
@@ -131,7 +131,7 @@ def show_profil(username):
 
 
 # API ne doit être appelé en POST et GET qu'avec le JS
-@app.route('/api/post', methods=['GET', 'POST'])
+@app.route('/api/post', methods=['GET', 'POST', 'DELETE'])
 def post():
     response_json_post = {}
     if request.method == 'GET':
@@ -142,14 +142,21 @@ def post():
         else:
             response_json_post = {'errors': False, 'message': "Il n'y a aucun post", 'post': {}}
             return jsonify(response_json_post)
-    else:  # Post
+    elif request.method == 'POST':  # Post
         if add_post(session.get('id'), request.form['namePost'], request.form['contentPost']):
             response_json_post = {'errors': False, 'message': 'Le post a bien été crée !'}
             return jsonify(response_json_post)
         else:
             response_json_post = {'errors': True, 'message': 'Impossible de créer le post !'}
             return jsonify(response_json_post)
-
+    elif request.method == 'DELETE':
+        if delete_post(session.get('id'), int(request.form['postID'])):
+            # Le post a bien été supprimé
+            response_json_post = {'errors': False, 'message': 'Le post a bien été supprimé !'}
+            return jsonify(response_json_post)
+        else:
+            response_json_post = {'errors': True, 'message': 'Impossible de supprimer le post !'}
+            return jsonify(response_json_post)
 
 
 @app.route("/api/user")

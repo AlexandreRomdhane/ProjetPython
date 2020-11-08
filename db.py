@@ -10,11 +10,13 @@ requestSQLLoginUser = """SELECT UtilisateurID, MotDePasse, NomUtilisateur FROM u
 
 requestSQLInfoUser = """SELECT NomUtilisateur FROM utilisateur WHERE UtilisateurID = %s"""
 
-requestSQLPostUser = """SELECT post.NomPost, post.ContenuPost, post.DatePost FROM post INNER JOIN utilisateur as user
+requestSQLPostUser = """SELECT post.PostID, post.NomPost, post.ContenuPost, post.DatePost FROM post INNER JOIN utilisateur as user
                      ON user.UtilisateurID = post.UtilisateurID WHERE user.UtilisateurID = %s
                      ORDER BY DatePost DESC LIMIT 0, 10"""
 
 requestSQLAddPost = """INSERT INTO post (UtilisateurID, NomPost, ContenuPost, DatePost) VALUES (%s, %s, %s, %s)"""
+
+requestSQLDeletePost = """DELETE FROM post WHERE UtilisateurID = %s AND PostID = %s"""
 
 
 # Fonction qui renvoie la connexion a la base (interface)
@@ -106,6 +108,23 @@ def add_post(id_user, name_post, content_post):
                 cursor.close()
                 return True
 
+        except pymysql.Error as e:
+            print(e)
+            cursor.close()
+            return False
+    else:
+        return False
+
+
+def delete_post(id_user, id_post):
+    if id_user > 0 and id_post > 0:
+        try:
+            with connectionDB.cursor() as cursor:
+                cursor.execute(requestSQLDeletePost, (id_user, id_post))
+
+                connectionDB.commit()
+                cursor.close()
+                return True
         except pymysql.Error as e:
             print(e)
             cursor.close()
