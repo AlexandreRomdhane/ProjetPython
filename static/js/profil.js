@@ -26,15 +26,47 @@ const refreshPost = () => {
 
 const createPostHTML = (post) => {
     let postContainerDiv = document.getElementById('post-container')
-    let noPost = document.createElement('p')
-    noPost.textContent = "Nom du post : " + post.NomPost + "   Contenu du post : " + post.ContenuPost + "   Date de post : " +  post.DatePost + " ||  "
-    postContainerDiv.append(noPost)
-
+    //TODO Rajkouter une row
+    //Header
+    let divPost = document.createElement('div')
+    divPost.className = 'col-md-12'
+    postContainerDiv.append(divPost)
+    //
+    let divRowHeaderPost = document.createElement('div')
+    divRowHeaderPost.className = 'row'
+    divPost.append(divRowHeaderPost)
+    //
+    let divHeaderPost = document.createElement('div')
+    divHeaderPost.className = 'col-md-12'
+    divRowHeaderPost.append(divHeaderPost)
+    //
+    let nomPost = document.createElement('h4')
+    nomPost.className = 'text-primary'
+    nomPost.textContent = post.NomPost
+    divHeaderPost.append(nomPost)
+    //Fin header
+    //Contenu
+    let divRowContentPost = document.createElement('div')
+    divRowContentPost.className = 'row'
+    divPost.append(divRowContentPost)
+    //
+    let divContentLeftPost = document.createElement('div')
+    divContentLeftPost.className = 'col-md-6'
+    divRowContentPost.append(divContentLeftPost)
+    //
+    let contentPost = document.createElement('p')
+    contentPost.textContent = post.ContenuPost
+    divContentLeftPost.append(contentPost)
+    //
+    let divContentRightPost = document.createElement('div')
+    divContentRightPost.className = 'col-md-6'
+    divRowContentPost.append(divContentRightPost)
+    //
     let btnDelete = document.createElement('button')
     btnDelete.type = "button"
     btnDelete.innerHTML = "Supprimer"
     btnDelete.className = "btn btn-outline-primary"
-
+    //
     btnDelete.onclick = () => {
         let formData = new FormData()
         formData.append('postID', post.PostID)
@@ -52,8 +84,23 @@ const createPostHTML = (post) => {
                 }
             })
     }
-
-    postContainerDiv.append(btnDelete)
+    divContentRightPost.append(btnDelete)
+    //Fin contenu
+    //Date
+    let divRowFooterPost = document.createElement('div')
+    divRowFooterPost.className = 'row'
+    divPost.append(divRowFooterPost)
+    //
+    let divFooterPost = document.createElement('div')
+    divFooterPost.className = 'col-md-12'
+    divRowFooterPost.append(divFooterPost)
+    //
+    let dateFooterPost = document.createElement('p')
+    //dateFooterPost.textContent = post.DatePost.toLocaleString()
+    const date = new Date(post.DatePost)
+    dateFooterPost.textContent = 'Posté le '+date.toLocaleString()
+    divFooterPost.append(dateFooterPost)
+    //Fin date
 }
 
 const getPost = () => {
@@ -64,6 +111,7 @@ const getPost = () => {
 }
 
 window.onload = () => {
+    refreshPost()
     document.getElementById("btnDeconnect").onclick = () => {
         window.location.replace("/logout");
     }

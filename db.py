@@ -26,6 +26,8 @@ requestSQLDeleteFollower = """Delete FROM Followers WHERE Follower_id = %s
 
 requestSQLIfFollowerExist = """SELECT Followed_id FROM Followers WHERE Follower = %s"""
 
+requestSQLIfUserExistByUsername = """SELECT UtilisateurID FROM utilisateur WHERE NomUtilisateur = %s"""
+
 
 # Fonction qui renvoie la connexion a la base (interface)
 def get_connection():
@@ -73,7 +75,7 @@ def get_post_user_by_id(id_user):
             return None
 
 
-def get_account_if_exist(email):
+def get_account_if_exist_by_email(email):
     try:
         with connectionDB.cursor() as cursor:
             cursor.execute(requestSQLLoginUser, email)
@@ -90,7 +92,7 @@ def get_account_if_exist(email):
 
 
 def register_account(email, password_hash, username):
-    if get_account_if_exist(email) is None:
+    if get_account_if_exist_by_email(email) is None:
         try:
             with connectionDB.cursor() as cursor:
                 cursor.execute(requestSQLInsertUser, (email, password_hash, username, date.today()))
@@ -138,4 +140,20 @@ def delete_post(id_user, id_post):
             cursor.close()
             return False
     else:
+        return False
+
+
+def get_account_if_exist_by_username(username):
+    try:
+        with connectionDB.cursor() as cursor:
+            cursor.execute(requestSQLIfUserExistByUsername, username)
+            if cursor.rowcount != 0:
+                cursor.close()
+                return True
+            else:
+                cursor.close()
+                return False
+    except pymysql.Error as e:
+        print(e)
+        cursor.close()
         return False

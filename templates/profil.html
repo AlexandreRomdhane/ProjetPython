@@ -8,10 +8,10 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
 </head>
 <body>
-<div class="container login-container">
+<div class="container">
     <div class="row">
         <div class="col-md-6 text-center">
-            <p>Tu es {{ name }}</p>
+            <h1>{{ name }}</h1>
         </div>
         <div class="col-md-6 text-center">
             <button id="btnDeconnect" type="button" class="btn btn-outline-primary">Déconnexion</button>
@@ -32,7 +32,7 @@
         </div>
     </div>
     <div id="post-container" class="row">
-        {% if post %}
+        <!--{% if post %}
             {% for row in post %}
                 <p>{{ row['NomPost'] }}  :  {{ row['DatePost'] }}</p>
             {% endfor %}
@@ -40,7 +40,7 @@
             <div class="col-md-6 offset-md-3 text-center">
                 <p>Tu n'as encore rien posté ! <a href="#">Poster</a></p>
             </div>
-        {% endif %}
+        {% endif %}-->
     </div>
 </div>
 </body>

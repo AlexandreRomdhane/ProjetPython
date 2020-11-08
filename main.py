@@ -1,13 +1,12 @@
 from flask import Flask, session, redirect, url_for, request, render_template, jsonify
-from markupsafe import escape
-import pymysql.cursors
 import bcrypt
 from email_validator import validate_email, EmailNotValidError
 import re
-from datetime import date
 from follow import follow, unfollow
+from markupsafe import escape
 
-from db import get_info_user_by_id, get_post_user_by_id, get_account_if_exist, register_account, add_post, delete_post
+
+from db import get_info_user_by_id, get_post_user_by_id, get_account_if_exist_by_email, register_account, add_post, delete_post, get_account_if_exist_by_username
 
 app = Flask(__name__)
 
@@ -86,7 +85,7 @@ def login():
     if request.method == 'POST':
         error = []
         # Faire la vérification
-        result_user = get_account_if_exist(request.form['email'])
+        result_user = get_account_if_exist_by_email(request.form['email'])
         if result_user is not None:  # Si l'utilisateur existe alors
             if bcrypt.checkpw(request.form['password'].encode('utf8'), result_user['MotDePasse'].encode('utf8')):
                 # Le mot de passe est correcte
@@ -116,29 +115,36 @@ def logout():
 @app.route("/profil/<username>")
 def show_profil(username):
     if 'id' in session:
-        # On regarde si le cookie de session est correcte et qu'il correspond a quelqu'un dans la base
-        info_user = get_info_user_by_id(session.get('id'))
-        if info_user is not None:
-            all_post_user = get_post_user_by_id(session.get('id'))
-            if all_post_user is not None:
-                return render_template('profil.html', name=info_user['NomUtilisateur'], post=all_post_user)
-            else:
-                return render_template('profil.html', name=info_user['NomUtilisateur'])
+        if get_account_if_exist_by_username(username):
+            return render_template('profil.html', name=escape(username))
         else:
-            print("Une erreur inattendue est arrivée ! (id de session introuvable en base)")
-            return redirect(url_for('logout'))
+            return render_template('not_found.html')
+        # On regarde si le cookie de session est correcte et qu'il correspond a quelqu'un dans la base
+        # info_user = get_info_user_by_id(session.get('id'))
+        # if info_user is not None:
+        #     all_post_user = get_post_user_by_id(session.get('id'))
+        #     if all_post_user is not None:
+        #         return render_template('profil.html', name=info_user['NomUtilisateur'], post=all_post_user)
+        #     else:
+        #         return render_template('profil.html', name=info_user['NomUtilisateur'])
+        # else:
+        #     print("Une erreur inattendue est arrivée ! (id de session introuvable en base)")
+        #     return redirect(url_for('logout'))
     else:
         return redirect(url_for('login'))
+
 
 # L'utilisateur de la session va suivre l'utilisateur user
 @app.route("/profil/<username>/follow")
 def followUser():
     follow()
 
+
 # L'utilisateur de la session va arrete de suivre l'utilsateur user
 @app.route("/profil/<username>/unfollow")
 def unfollowUser():
     unfollow()
+
 
 # API ne doit être appelé en POST et GET qu'avec le JS
 @app.route('/api/post', methods=['GET', 'POST', 'DELETE'])
