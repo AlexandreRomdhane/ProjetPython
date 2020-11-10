@@ -19,17 +19,19 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-6 offset-md-3 text-center">
-            <div class="form-group">
-                <input id="namePost" type="text" class="form-control" placeholder="Nom du post *" name="namePost" />
+        {% if same_user_than_profil %}
+            <div class="col-md-6 offset-md-3 text-center">
+                <div class="form-group">
+                    <input id="namePost" type="text" class="form-control" placeholder="Nom du post *" name="namePost" />
+                </div>
+                <div class="form-group">
+                    <input id="contentPost" type="text" class="form-control" placeholder="Contenu du post *" name="contentPost" />
+                </div>
+                <div class="form-group">
+                    <input id="btnPoster" type="submit" class="btn btn-outline-primary" value="Poster" />
+                </div>
             </div>
-            <div class="form-group">
-                <input id="contentPost" type="text" class="form-control" placeholder="Contenu du post *" name="contentPost" />
-            </div>
-            <div class="form-group">
-                <input id="btnPoster" type="submit" class="btn btn-outline-primary" value="Poster" />
-            </div>
-        </div>
+        {% endif %}
     </div>
     <div id="post-container" class="row">
         <!--{% if post %}

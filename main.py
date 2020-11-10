@@ -6,7 +6,7 @@ from follow import follow, unfollow
 from markupsafe import escape
 
 
-from db import get_info_user_by_id, get_post_user_by_id, get_account_if_exist_by_email, register_account, add_post, delete_post, get_account_if_exist_by_username
+from db import get_info_user_by_id, get_account_if_exist_by_email, get_post_user_by_username, register_account, add_post, delete_post, get_account_if_exist_by_username
 
 app = Flask(__name__)
 
@@ -116,7 +116,15 @@ def logout():
 def show_profil(username):
     if 'id' in session:
         if get_account_if_exist_by_username(username):
-            return render_template('profil.html', name=escape(username))
+            result = get_info_user_by_id(session.get('id'))
+            if result is not None:
+                if username != result['NomUtilisateur']:
+                    return render_template('profil.html', name=escape(username))
+                else:
+                    return render_template('profil.html', name=escape(username), same_user_than_profil=True)
+            else:
+                print("Erreur innatendue (id de session pas présent dans la base)")
+                return redirect(url_for('login'))
         else:
             return render_template('not_found.html')
         # On regarde si le cookie de session est correcte et qu'il correspond a quelqu'un dans la base
@@ -151,7 +159,7 @@ def unfollowUser():
 def post():
     response_json_post = {}
     if request.method == 'GET':
-        all_post_user = get_post_user_by_id(session.get('id'))
+        all_post_user = get_post_user_by_username(request.args.get('username'))
         if all_post_user is not None:
             response_json_post = {'errors': False, 'message': '', 'post': all_post_user}
             return jsonify(response_json_post)
@@ -178,6 +186,7 @@ def post():
 @app.route("/api/user")
 def get_user_by_session_id():
     if session.get('id') is not None:
+        # print(session.get('id'))
         result_user = get_info_user_by_id(session.get('id'))
 
         if result_user is not None:

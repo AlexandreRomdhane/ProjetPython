@@ -1,3 +1,6 @@
+let isMyProfil = false
+let username = ""
+
 const refreshPost = () => {
     //post-container
     getPost() // A terme rechercher avec le nom d'utilisateur
@@ -62,29 +65,32 @@ const createPostHTML = (post) => {
     divContentRightPost.className = 'col-md-6'
     divRowContentPost.append(divContentRightPost)
     //
-    let btnDelete = document.createElement('button')
-    btnDelete.type = "button"
-    btnDelete.innerHTML = "Supprimer"
-    btnDelete.className = "btn btn-outline-primary"
-    //
-    btnDelete.onclick = () => {
-        let formData = new FormData()
-        formData.append('postID', post.PostID)
-        fetch('/api/post', {
-            method: 'delete',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if(!data.errors) {
-                    //alert(data.message)
-                    refreshPost()
-                } else {
-                    alert(data.message)
-                }
+    if(isMyProfil) {
+        let btnDelete = document.createElement('button')
+        btnDelete.type = "button"
+        btnDelete.innerHTML = "Supprimer"
+        btnDelete.className = "btn btn-outline-primary"
+        //
+        btnDelete.onclick = () => {
+            let formData = new FormData()
+            formData.append('postID', post.PostID)
+            fetch('/api/post', {
+                method: 'delete',
+                body: formData
             })
+                .then(response => response.json())
+                .then(data => {
+                    if(!data.errors) {
+                        //alert(data.message)
+                        refreshPost()
+                    } else {
+                        alert(data.message)
+                    }
+                })
+        }
+        divContentRightPost.append(btnDelete)
     }
-    divContentRightPost.append(btnDelete)
+
     //Fin contenu
     //Date
     let divRowFooterPost = document.createElement('div')
@@ -104,13 +110,29 @@ const createPostHTML = (post) => {
 }
 
 const getPost = () => {
-    return fetch('/api/post')
+    return fetch('/api/post?username='+username)
         .then(response => {
             return response.json()
         })
 }
 
 window.onload = () => {
+    fetch("/api/user")
+        .then(response => response.json())
+        .then(data => {
+            if(!data.errors) {
+                username = window.location.pathname.split('/')[2]
+                if(data.username == username) {
+                    isMyProfil = true
+                }
+                init()
+            } else {
+
+            }
+        })
+}
+
+const init = () => {
     refreshPost()
     document.getElementById("btnDeconnect").onclick = () => {
         window.location.replace("/logout");
@@ -120,30 +142,34 @@ window.onload = () => {
         window.location.replace("/")
     }
 
-    document.getElementById("btnPoster").onclick = () => {
-        let namePost = document.getElementById("namePost").value
-        let contentPost = document.getElementById("contentPost").value
-        if(namePost.length != 0 && contentPost.length != 0) {
-            let formData = new FormData()
-            formData.append('namePost', namePost)
-            formData.append('contentPost', contentPost)
-            fetch('/api/post', {
-                method: 'post',
-                body: formData
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if(!data.errors) { // Si il n'y a pas d'erreur
-                        // Le post a bien été crée
-                        //window.location.reload()
-                        fetch('/api/post')
-                            .then(response => response.json())
-                            .then(data => refreshPost(data))
-                        document.getElementById("namePost").value = ""
-                        document.getElementById("contentPost").value = ""
-                    }
+    let btnPoster = document.getElementById("btnPoster")
+
+    if(btnPoster != undefined) {
+        btnPoster.onclick = () => {
+            let namePost = document.getElementById("namePost").value
+            let contentPost = document.getElementById("contentPost").value
+            if(namePost.length != 0 && contentPost.length != 0) {
+                let formData = new FormData()
+                formData.append('namePost', namePost)
+                formData.append('contentPost', contentPost)
+                fetch('/api/post', {
+                    method: 'post',
+                    body: formData
                 })
-                .catch(error => console.error(error))
+                    .then(response => response.json())
+                    .then(data => {
+                        if(!data.errors) { // Si il n'y a pas d'erreur
+                            // Le post a bien été crée
+                            //window.location.reload()
+                            fetch('/api/post')
+                                .then(response => response.json())
+                                .then(data => refreshPost(data))
+                            document.getElementById("namePost").value = ""
+                            document.getElementById("contentPost").value = ""
+                        }
+                    })
+                    .catch(error => console.error(error))
+            }
         }
     }
 }

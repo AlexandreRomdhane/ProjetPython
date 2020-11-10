@@ -14,6 +14,10 @@ requestSQLPostUser = """SELECT post.PostID, post.NomPost, post.ContenuPost, post
                      ON user.UtilisateurID = post.UtilisateurID WHERE user.UtilisateurID = %s
                      ORDER BY DatePost DESC LIMIT 0, 10"""
 
+requestSQLPostUserByUsername = """SELECT post.PostID, post.NomPost, post.ContenuPost, post.DatePost FROM post 
+                        INNER JOIN utilisateur as user
+        ON user.UtilisateurID = post.UtilisateurID WHERE user.NomUtilisateur = %s ORDER BY DatePost DESC LIMIT 0, 10"""
+
 requestSQLAddPost = """INSERT INTO post (UtilisateurID, NomPost, ContenuPost, DatePost) VALUES (%s, %s, %s, %s)"""
 
 requestSQLDeletePost = """DELETE FROM post WHERE UtilisateurID = %s AND PostID = %s"""
@@ -59,20 +63,20 @@ def get_info_user_by_id(id_user):
             return None
 
 
-def get_post_user_by_id(id_user):
-    if id_user > 0:
-        try:
-            with connectionDB.cursor() as cursor_post_user:
-                cursor_post_user.execute(requestSQLPostUser, id_user)
-                if cursor_post_user.rowcount != 0:
-                    result_post = cursor_post_user.fetchall()
-                    cursor_post_user.close()
-                    return result_post
-                else:
-                    return None
-        except pymysql.Error as e:
-            cursor_post_user.close()
-            return None
+def get_post_user_by_username(username):
+    try:
+        with connectionDB.cursor() as cursor_post_user:
+            cursor_post_user.execute(requestSQLPostUserByUsername, username)
+            if cursor_post_user.rowcount != 0:
+                result_post = cursor_post_user.fetchall()
+                cursor_post_user.close()
+                return result_post
+            else:
+                return None
+    except pymysql.Error as e:
+        cursor_post_user.close()
+        print(e)
+        return None
 
 
 def get_account_if_exist_by_email(email):
