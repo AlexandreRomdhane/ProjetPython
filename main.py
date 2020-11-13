@@ -144,14 +144,14 @@ def show_profil(username):
 
 # L'utilisateur de la session va suivre l'utilisateur user
 @app.route("/profil/<username>/follow")
-def followUser():
-    follow()
+def followUser(username):
+    return follow(username)
 
 
 # L'utilisateur de la session va arrete de suivre l'utilsateur user
 @app.route("/profil/<username>/unfollow")
-def unfollowUser():
-    unfollow()
+def unfollowUser(username):
+    return unfollow(username)
 
 
 # API ne doit être appelé en POST et GET qu'avec le JS
