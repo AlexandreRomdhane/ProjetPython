@@ -10,7 +10,7 @@ requestSQLDeleteFollower = """Delete FROM Followers WHERE Follower_id = %s
 requestSQLIfFollowerExist = """SELECT Followed_id FROM Followers WHERE Follower = %s"""
 
 
-def follow():
+def follow(username):
     if request.method == 'GET':
         if not session.get('id') is None:
             return redirect(url_for('index'))
@@ -21,6 +21,7 @@ def follow():
         try:
             if len(request.form['followed_id']) == 0:
                 error.append("Aucune personne à suivre")
+                return render_template('profil.html')
             if len(error) == 0: 
                 # Si il y a aucune erreur alors on continue
                 with connectionDB.cursor() as cur:
@@ -34,7 +35,7 @@ def follow():
                             session.get('id'),
                             request.form['followed_id'])
                             connnectionDB.commit() # Permet de valider la transation
-                            return redirect(url_for('profil'))
+                            return render_template('profil.html')
                     else:
                         # Cas où le user suit déjà la personne
                         #
@@ -44,9 +45,9 @@ def follow():
                 #
                 return render_template('profil.html')
         except pymysql.Error as e:
-            return "Oui"
+            return render_template('profil.html')
 
-def unfollow():
+def unfollow(username):
     if request.method == 'GET':
         if not session.get('id') is None:
             return redirect(url_for('index'))
