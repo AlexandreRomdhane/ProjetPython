@@ -51,6 +51,7 @@ def follow(username):
             print("error")
             return render_template('profil.html')
 
+<<<<<<< Updated upstream
 def unfollow(username):
     if session.get('id') < 0:
         return render_template('register.html')
