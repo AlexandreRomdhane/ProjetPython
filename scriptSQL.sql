@@ -32,7 +32,7 @@ DROP TABLE IF EXISTS `followers`;
 CREATE TABLE IF NOT EXISTS `followers` (
   `follower_id` int(11) NOT NULL,
   `followed_id` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf16 COLLATE=utf16_bin;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- --------------------------------------------------------
 
@@ -81,9 +81,6 @@ CREATE TABLE IF NOT EXISTS `utilisateur` (
 -- Déchargement des données de la table `utilisateur`
 --
 
-INSERT INTO `utilisateur` (`UtilisateurID`, `Mail`, `Motdepasse`, `NomUtilisateur`, `DateCreation`) VALUES
-(10, 'alexandre.romdhane@ipilyon.net', '$2b$12$cuHKFMa6jmWK7jDVz6mh5eqHRU4Te0bPTGH/RzqIdvawNLwsbstI6', 'Alexandre', '2020-11-02');
-COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
