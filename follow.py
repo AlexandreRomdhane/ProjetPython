@@ -26,7 +26,7 @@ def follow(username):
                         # Cas où le user ne suit pas
                         with connectionDB.cursor() as cursorSelect:
                             # Selection du followed_id
-                            cursorInsert.execute(requestSQLUsername, 
+                            cursorSelect.execute(requestSQLUsername, 
                             username)
                             followed_id = cursorSelect.fetchall()
                         with connectionDB.cursor() as cursorInsert:
@@ -35,12 +35,10 @@ def follow(username):
                             session.get('id'),
                             followed_id)
                             connectionDB.commit() # Permet de valider la transation
-                            print(error)
                             return render_template('profil.html')
                     else:
                         # Cas où le user suit déjà la personne
                         #
-                        error.append('Vous suivez déjà la personne')
                         print("Vous suivez déjà la personne")
                         return render_template('profil.html')
             else:
@@ -82,7 +80,7 @@ def unfollow():
                             cursorInsert.execute(requestSQLDeleteFollower, 
                             session.get('id'),
                             followed_id)
-                            connnectionDB.commit() # Permet de valider la transation
+                            connectionDB.commit() # Permet de valider la transation
                             return redirect(url_for('profil'))
                     else:
                         # Cas où le user ne suit pas
