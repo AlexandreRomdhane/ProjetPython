@@ -36,7 +36,7 @@ def follow(username):
                                                  session.get('id'),
                                                  followed_id)
                             connectionDB.commit()  # Permet de valider la transation
-                            return render_template('profil.html')
+                            return redirect(url_for('profil'))
                     else:
                         # Cas où le user suit déjà la personne
                         #
@@ -52,12 +52,9 @@ def follow(username):
 
 
 def unfollow(username):
-    if request.method == 'GET':
-        if not session.get('id') is None:
-            return redirect(url_for('index'))
-        else:
-            return render_template('register.html')
-    else:
+    if session.get('id') < 0:
+        return render_template('register.html')
+    else:           
         try:
             if len(username) == 0:
                 with connectionDB.cursor() as cur:
