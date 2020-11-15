@@ -12,21 +12,6 @@ app = Flask(__name__)
 
 app.secret_key = "OuiBiensurquecestsecretsinonsasersarien"
 
-# requestSQLIfUserExist = """SELECT NomUtilisateur FROM utilisateur WHERE Mail = %s"""
-#
-# requestSQLInsertUser = """INSERT INTO utilisateur (Mail, MotDePasse, NomUtilisateur, DateCreation)
-#                        VALUES (%s, %s, %s, %s)"""
-#
-# requestSQLLoginUser = """SELECT UtilisateurID, MotDePasse, NomUtilisateur FROM utilisateur WHERE Mail = %s"""
-#
-# requestSQLInfoUser = """SELECT NomUtilisateur FROM utilisateur WHERE UtilisateurID = %s"""
-#
-# requestSQLPostUser = """SELECT post.NomPost, post.ContenuPost, post.DatePost FROM post INNER JOIN utilisateur as user
-#                      ON user.UtilisateurID = post.UtilisateurID WHERE user.UtilisateurID = %s
-#                      ORDER BY DatePost DESC LIMIT 0, 10"""
-#
-# requestSQLAddPost = """INSERT INTO post (UtilisateurID, NomPost, ContenuPost, DatePost) VALUES (%s, %s, %s, %s)"""
-
 charLengthRegex = re.compile(r'(\w{8,})')
 upperRegex = re.compile(r'[A-Z]+')
 
@@ -67,13 +52,11 @@ def register():
                                            , error=error
                                            , email=request.form['email'], user=request.form['user'])
             else:
-                # TODO Faire une fonction pour éviter de faire plusieurs fois le même traitement
                 return render_template('register.html'
                                        , error=error
                                        , email=request.form['email'], user=request.form['user'])
         except EmailNotValidError as e:
             error.append("L'adresse email n'est pas valide !")
-            # TODO Faire une fonction pour éviter de faire plusieurs fois le même traitement
             return render_template('register.html'
                                    , error=error
                                    , email=request.form['email'], user=request.form['user'])
@@ -127,30 +110,19 @@ def show_profil(username):
                 return redirect(url_for('login'))
         else:
             return render_template('not_found.html')
-        # On regarde si le cookie de session est correcte et qu'il correspond a quelqu'un dans la base
-        # info_user = get_info_user_by_id(session.get('id'))
-        # if info_user is not None:
-        #     all_post_user = get_post_user_by_id(session.get('id'))
-        #     if all_post_user is not None:
-        #         return render_template('profil.html', name=info_user['NomUtilisateur'], post=all_post_user)
-        #     else:
-        #         return render_template('profil.html', name=info_user['NomUtilisateur'])
-        # else:
-        #     print("Une erreur inattendue est arrivée ! (id de session introuvable en base)")
-        #     return redirect(url_for('logout'))
     else:
         return redirect(url_for('login'))
 
 
 # L'utilisateur de la session va suivre l'utilisateur user
 @app.route("/profil/<username>/follow")
-def followUser(username):
+def follow_user(username):
     return follow(username)
 
 
 # L'utilisateur de la session va arrete de suivre l'utilsateur user
 @app.route("/profil/<username>/unfollow")
-def unfollowUser(username):
+def unfollow_user(username):
     return unfollow(username)
 
 
