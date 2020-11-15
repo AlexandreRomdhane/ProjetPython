@@ -55,6 +55,15 @@ def follow(username):
 def unfollow(username):
     if session.get('id') < 0:
         return render_template('register.html')
+=======
+
+def unfollow():
+    if request.method == 'GET':
+        if not session.get('id') is None:
+            return redirect(url_for('index'))
+        else:
+            return render_template('register.html')
+>>>>>>> Stashed changes
     else:
         try:
             if len(username) == 0:
