@@ -10,13 +10,17 @@ requestSQLLoginUser = """SELECT UtilisateurID, MotDePasse, NomUtilisateur FROM u
 
 requestSQLInfoUser = """SELECT NomUtilisateur FROM utilisateur WHERE UtilisateurID = %s"""
 
-requestSQLPostUser = """SELECT post.PostID, post.NomPost, post.ContenuPost, post.DatePost FROM post INNER JOIN utilisateur as user
-                     ON user.UtilisateurID = post.UtilisateurID WHERE user.UtilisateurID = %s
-                     ORDER BY DatePost DESC LIMIT 0, 10"""
+requestSQLPostUser = """SELECT post.PostID, post.NomPost, post.ContenuPost, post.DatePost FROM post 
+                        INNER JOIN utilisateur as user
+                        ON user.UtilisateurID = post.UtilisateurID 
+                        WHERE user.UtilisateurID = %s
+                        ORDER BY DatePost DESC LIMIT 0, 10"""
 
 requestSQLPostUserByUsername = """SELECT post.PostID, post.NomPost, post.ContenuPost, post.DatePost FROM post 
-                        INNER JOIN utilisateur as user
-        ON user.UtilisateurID = post.UtilisateurID WHERE user.NomUtilisateur = %s ORDER BY DatePost DESC LIMIT 0, 10"""
+                                  INNER JOIN utilisateur as user
+                                  ON user.UtilisateurID = post.UtilisateurID 
+                                  WHERE user.NomUtilisateur = %s 
+                                  ORDER BY DatePost DESC LIMIT 0, 10"""
 
 requestSQLAddPost = """INSERT INTO post (UtilisateurID, NomPost, ContenuPost, DatePost) VALUES (%s, %s, %s, %s)"""
 
@@ -59,6 +63,7 @@ def get_info_user_by_id(id_user):
                 else:
                     return None
         except pymysql.Error as e:
+            print(e)
             cursor.close()
             return None
 
@@ -74,8 +79,8 @@ def get_post_user_by_username(username):
             else:
                 return None
     except pymysql.Error as e:
-        cursor_post_user.close()
         print(e)
+        cursor_post_user.close()
         return None
 
 
@@ -91,6 +96,7 @@ def get_account_if_exist_by_email(email):
                 cursor.close()
                 return None
     except pymysql.Error as e:
+        print(e)
         cursor.close()
         return None
 
@@ -106,6 +112,7 @@ def register_account(email, password_hash, username):
                 return True
 
         except pymysql.Error as e:
+            print(e)
             cursor.close()
             return False
     else:
