@@ -20,6 +20,5 @@ Routes pour le site :
 		-Toutes accessible depuis le site web
 			GET / 	OU	 /index  Permet d'accéder au fil d'actualités. Il n'y a qu'un bouton pour voir son propre profil (malheureusement nous n'avons pas eu le temps d'approfondir cette page)
 			GET /profil/<username> Permet d'accéder au profil de la personne qui est mentionné dans l'url.
-		
-		GET /profil/<username>/follow Permet de suivre une personne pour voir ses posts sur son fil (cette partie ne fonctionne pas a 100% mais le code est bien présent en python)
-		GET /profil/<username>/unfollow Permet de ne plus suivre une personne pour ne plus voir ses posts sur son fil (cette partie ne fonctionne pas a 100% mais le code est bien présent en python)
+			GET /profil/<username>/follow Permet de suivre une personne pour voir ses posts sur son fil (cette partie ne fonctionne pas a 100% mais le code est bien présent en python)
+			GET /profil/<username>/unfollow Permet de ne plus suivre une personne pour ne plus voir ses posts sur son fil (cette partie ne fonctionne pas a 100% mais le code est bien présent en python)
