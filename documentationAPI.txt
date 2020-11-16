@@ -1,0 +1,25 @@
+Toutes les routes de notre API : 
+	-Routes pour les posts du site:
+		GET /api/post?username Permet de récupérer les posts de la personne sous le format JSON si la variable errors est a vraie alors une erreur c'est produit et le détails seras dans la variable message.
+		POST /api/post (données en formData) Permet de publier un post en fonction de l'id de session enregistré (obliger de se connecter au site et utiliser l'interface) avec un titre (namePost) et un corps (contentPost)
+		DELETE /api/post (données en formData) Permet de supprimer un post en fonction de l'id de session enregistré (obliger de se connecter au site et utiliser l'interface) et l'id du post (postID)
+	
+	-Route user
+		GET /api/user Permet de récupérer le nom d'utilisateur en fonction de l'id de session
+
+Routes pour le site :
+	-Routes pour le système de compte :
+		-Toutes accessible depuis le site web
+			GET /register Permet d'avoir l'interface de création de compte
+			POST /register Permet de soumettre les données de création de compte
+			GET /login Permet d'avoir l'interface de connexion
+			POST /login Permet de soumettre les données de connexion
+			GET /logout permet de se déconnecter
+	
+	-Routes pour le contenu du site : 
+		-Toutes accessible depuis le site web
+			GET / 	OU	 /index  Permet d'accéder au fil d'actualités. Il n'y a qu'un bouton pour voir son propre profil (malheureusement nous n'avons pas eu le temps d'approfondir cette page)
+			GET /profil/<username> Permet d'accéder au profil de la personne qui est mentionné dans l'url.
+		
+		GET /profil/<username>/follow Permet de suivre une personne pour voir ses posts sur son fil (cette partie ne fonctionne pas a 100% mais le code est bien présent en python)
+		GET /profil/<username>/unfollow Permet de ne plus suivre une personne pour ne plus voir ses posts sur son fil (cette partie ne fonctionne pas a 100% mais le code est bien présent en python)
