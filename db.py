@@ -1,5 +1,5 @@
-import pymysql.cursors
 from datetime import date
+import pymysql.cursors
 
 requestSQLIfUserExist = """SELECT NomUtilisateur FROM utilisateur WHERE Mail = %s"""
 

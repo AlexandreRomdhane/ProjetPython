@@ -1,7 +1,7 @@
+import re
 from flask import Flask, session, redirect, url_for, request, render_template, jsonify
 import bcrypt
 from email_validator import validate_email, EmailNotValidError
-import re
 from follow import follow, unfollow
 from markupsafe import escape
 

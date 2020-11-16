@@ -1,5 +1,5 @@
 import pymysql
-from flask import Flask, session, redirect, url_for, request, render_template, jsonify
+from flask import session, redirect, url_for, request, render_template
 from db import connectionDB
 
 requestSQLInsertFollower = """INSERT INTO Followers (Follower_id, Followed_id) 
